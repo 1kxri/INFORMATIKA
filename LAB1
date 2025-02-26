@@ -8,9 +8,7 @@ int main() {
 	setlocale(LC_CTYPE, "RUS");
 	//A
 	double res, res2, res3, res4, res5, res6;
-	int x, y, z;
 	printf("Значения выражений с большим количесвом десятичных знаков:\n");
-	printf("Введите два числа")
 	res = 17.0 / 9.0;
 	res2 = sqrt(17);
 	printf("%f\n", res);
@@ -27,3 +25,11 @@ int main() {
 	printf("%f\n", fabs(res6));
 	printf("Значит, более точное выражение: 17/9 = 1.89\n");
 	//B
+	double num, roundednum, absoluteerror;
+	printf("Введите число:");
+	scanf("%lf", &num);
+	roundednum = round(num);
+	absoluteerror = fabs(num - roundednum);
+	printf("Округленное число: %0.f\n", roundednum);
+	printf("Абсолютная погрешность: %6f\n", absoluteerror);
+	//C
