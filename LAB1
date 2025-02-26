@@ -1,0 +1,29 @@
+#define _CRT_SECURE_NO_WARNINGS  
+
+#include <stdio.h>  
+#include <locale.h>  
+#include <math.h>  
+
+int main() {
+	setlocale(LC_CTYPE, "RUS");
+	//A
+	double res, res2, res3, res4, res5, res6;
+	int x, y, z;
+	printf("Значения выражений с большим количесвом десятичных знаков:\n");
+	printf("Введите два числа")
+	res = 17.0 / 9.0;
+	res2 = sqrt(17);
+	printf("%f\n", res);
+	printf("%f\n", res2);
+	printf("Предельные абсолютные погрешности, округляя их с избытком:\n");
+	res3 = 1.89 - res;
+	printf("%f\n", fabs(res3));
+	res4 = 4.12 - res2;
+	printf("%f\n", fabs(res4));
+	printf("Предельные относительные погрешности составляют (в %):\n");
+	res5 = res3 / res;
+	printf("%f\n", res5);
+	res6 = res4 / res2;
+	printf("%f\n", fabs(res6));
+	printf("Значит, более точное выражение: 17/9 = 1.89\n");
+	//B
