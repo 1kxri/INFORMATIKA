@@ -42,3 +42,4 @@ int main() {
 	relativeerror = absoluteerror / fabs(truevalue);
 	printf("Абсолютная погрешность: %.6f\n", absoluteerror2);
 	printf("Относительная погрешность: %.6f\n", relativeerror);
+}
