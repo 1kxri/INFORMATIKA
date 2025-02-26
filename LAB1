@@ -21,7 +21,7 @@ int main() {
 	printf("Предельные относительные погрешности составляют (в %):\n");
 	res5 = res3 / res;
 	printf("%f\n", res5);
-	res6 = res4 / res2;
+	res6 = res4 / res2; 
 	printf("%f\n", fabs(res6));
 	printf("Значит, более точное выражение: 17/9 = 1.89\n");
 	//B
@@ -33,3 +33,12 @@ int main() {
 	printf("Округленное число: %0.f\n", roundednum);
 	printf("Абсолютная погрешность: %6f\n", absoluteerror);
 	//C
+	double truevalue, approxvalue, absoluteerror2, relativeerror;
+	printf("Введите истинное значение:");
+	scanf("%lf", &truevalue);
+	printf("Введите приближенное значение:");
+	scanf("%lf", &approxvalue);
+	absoluteerror2 = fabs(truevalue - approxvalue);
+	relativeerror = absoluteerror / fabs(truevalue);
+	printf("Абсолютная погрешность: %.6f\n", absoluteerror2);
+	printf("Относительная погрешность: %.6f\n", relativeerror);
