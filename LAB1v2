@@ -1,0 +1,97 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <math.h>
+#include <locale.h>
+
+// Функция для вычисления абсолютной и относительной погрешности
+void calculateErrors(double trueValue, double approxValue, double* absError, double* relError) {
+    *absError = fabs(trueValue - approxValue);
+    *relError = (*absError / trueValue) * 100; // В процентах
+}
+
+// Функция для округления числа до N знаков после запятой
+double roundToN(double number, int N) {
+    double factor = pow(10, N);
+    return round(number * factor) / factor;
+}
+
+// Функция для определения количества значащих цифр после запятой
+int countDecimalPlaces(double number) {
+    int count = 0;
+    while (number != (int)number) {
+        number *= 10;
+        count++;
+    }
+    return count;
+}
+
+int main() {
+    setlocale(LC_CTYPE, "RUS");
+
+    printf("Часть а)\n");
+
+    double ftf, fts, Koren, FirstAlm, SecondAlm;
+
+    printf("Введите числитель первого выражения: ");
+    scanf("%lf", &ftf);
+    printf("Введите знаменатель первого выражения: ");
+    scanf("%lf", &fts);
+
+    double FirstTrue = ftf / fts;
+
+    printf("Введите приближенное значение для первого выражения: ");
+    scanf("%lf", &FirstAlm);
+
+    printf("Введите число под корнем второго выражения: ");
+    scanf("%lf", &Koren);
+
+    double SecondTrue = sqrt(Koren);
+    printf("Введите приближенное значение для второго выражения: ");
+    scanf("%lf", &SecondAlm);
+
+    double FirstAbs, FirstRel, SecondAbs, SecondRel;
+    calculateErrors(FirstTrue, FirstAlm, &FirstAbs, &FirstRel);
+    calculateErrors(SecondTrue, SecondAlm, &SecondAbs, &SecondRel);
+
+    printf("\nДля выражения 1: %.6lf (Истинное значение: %.6lf)\n"
+        "Абсолютная погрешность: %.6lf\n"
+        "Относительная погрешность: %.6lf%%\n\n",
+        FirstAlm, FirstTrue, FirstAbs, FirstRel);
+
+    printf("Для выражения 2: %.6lf (Истинное значение: %.6lf)\n"
+        "Абсолютная погрешность: %.6lf\n"
+        "Относительная погрешность: %.6lf%%\n\n",
+        SecondAlm, SecondTrue, SecondAbs, SecondRel);
+
+    printf("Более точное выражение: %.6lf (Истинное значение: %.6lf)\n",
+        (FirstRel < SecondRel ? FirstAlm : SecondAlm),
+        (FirstRel < SecondRel ? FirstTrue : SecondTrue));
+
+    printf("\n\nЧасть б)\n");
+
+    double ini, ER;
+    printf("Введите искомое число: ");
+    scanf("%lf", &ini);
+    printf("Введите погрешность: ");
+    scanf("%lf", &ER);
+
+    int dec_count = (int)(log10(1 / ER));
+    double TrueSigns = roundToN(ini, dec_count);
+
+    printf("\nЧисло только с верными знаками: %.6lf\n", TrueSigns);
+
+    printf("\n\nЧасть в)\n");
+
+    double TrueNum;
+    printf("Введите число, все цифры которого верны по умолчанию: ");
+    scanf("%lf", &TrueNum);
+
+    int kol = countDecimalPlaces(TrueNum);
+    double AbsPog = 0.5 / pow(10, kol);
+    double OtnPog = (AbsPog / TrueNum) * 100;
+
+    printf("\nПредельная абсолютная погрешность: %.6lf\n"
+        "Предельная относительная погрешность: %.6lf%%\n\n", AbsPog, OtnPog);
+
+    return 0;
+}
