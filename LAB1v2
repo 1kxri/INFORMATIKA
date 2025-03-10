@@ -6,7 +6,7 @@
 // Функция для вычисления абсолютной и относительной погрешности
 void calculateErrors(double trueValue, double approxValue, double* absError, double* relError) {
     *absError = fabs(trueValue - approxValue);
-    *relError = (*absError / trueValue) * 100; // В процентах
+    *relError = (*absError / trueValue) * 100; 
 }
 
 // Функция для округления числа до N знаков после запятой
@@ -28,68 +28,66 @@ int countDecimalPlaces(double number) {
 int main() {
     setlocale(LC_CTYPE, "RUS");
 
-    printf("Часть а)\n");
+    double chislitel, znamenatel, koren, perv_znach, vtor_znach;
 
-    double ftf, fts, Koren, FirstAlm, SecondAlm;
-
+    printf("а)");
     printf("Введите числитель первого выражения: ");
-    scanf("%lf", &ftf);
+    scanf("%lf", &chislitel);
     printf("Введите знаменатель первого выражения: ");
-    scanf("%lf", &fts);
+    scanf("%lf", &znamenatel);
 
-    double FirstTrue = ftf / fts;
+    double perv_znach_prav = chislitel / znamenatel;
 
     printf("Введите приближенное значение для первого выражения: ");
-    scanf("%lf", &FirstAlm);
+    scanf("%lf", &perv_znach);
 
     printf("Введите число под корнем второго выражения: ");
-    scanf("%lf", &Koren);
+    scanf("%lf", &koren);
 
-    double SecondTrue = sqrt(Koren);
+    double vtor_znach_prav = sqrt(koren);
     printf("Введите приближенное значение для второго выражения: ");
-    scanf("%lf", &SecondAlm);
+    scanf("%lf", &vtor_znach);
 
     double FirstAbs, FirstRel, SecondAbs, SecondRel;
-    calculateErrors(FirstTrue, FirstAlm, &FirstAbs, &FirstRel);
-    calculateErrors(SecondTrue, SecondAlm, &SecondAbs, &SecondRel);
+    calculateErrors(perv_znach_prav, perv_znach, &FirstAbs, &FirstRel);
+    calculateErrors(vtor_znach_prav, vtor_znach, &SecondAbs, &SecondRel);
 
-    printf("\nДля выражения 1: %.6lf (Истинное значение: %.6lf)\n"
-        "Абсолютная погрешность: %.6lf\n"
-        "Относительная погрешность: %.6lf%%\n\n",
-        FirstAlm, FirstTrue, FirstAbs, FirstRel);
+    printf("\nПервое выражение:\n");
+    printf("Значение выражения с большим количесвом десятичных знаков: %.6lf\n"
+        "Предельная абсолютная погрешность, округляя ее с избытком: %.6lf\n"
+        "Предельная относительная погрешность составляют (в %) %.6lf%%\n\n",
+        perv_znach_prav, FirstAbs, FirstRel);
 
-    printf("Для выражения 2: %.6lf (Истинное значение: %.6lf)\n"
-        "Абсолютная погрешность: %.6lf\n"
-        "Относительная погрешность: %.6lf%%\n\n",
-        SecondAlm, SecondTrue, SecondAbs, SecondRel);
+    printf("\nВторое выражение:\n");
+    printf("Значение выражения с большим количесвом десятичных знаков: %.6lf\n"
+        "Предельная абсолютная погрешность, округляя ее с избытком: %.6lf\n"
+        "Предельная относительная погрешность составляют (в %) %.6lf%%\n\n",
+        vtor_znach_prav, SecondAbs, SecondRel);
 
-    printf("Более точное выражение: %.6lf (Истинное значение: %.6lf)\n",
-        (FirstRel < SecondRel ? FirstAlm : SecondAlm),
-        (FirstRel < SecondRel ? FirstTrue : SecondTrue));
+    printf("Более точное выражение: %.6lf\n",
+        (FirstRel < SecondRel ? perv_znach : vtor_znach));
 
-    printf("\n\nЧасть б)\n");
-
-    double ini, ER;
+    printf("\n\nб)");
+    double ini, pogreshonost;
     printf("Введите искомое число: ");
     scanf("%lf", &ini);
     printf("Введите погрешность: ");
-    scanf("%lf", &ER);
+    scanf("%lf", &pogreshonost);
 
-    int dec_count = (int)(log10(1 / ER));
+    int dec_count = (int)(log10(1 / pogreshonost));
     double TrueSigns = roundToN(ini, dec_count);
 
     printf("\nЧисло только с верными знаками: %.6lf\n", TrueSigns);
 
-    printf("\n\nЧасть в)\n");
+    printf("\n\nв)");
 
     double TrueNum;
     printf("Введите число, все цифры которого верны по умолчанию: ");
     scanf("%lf", &TrueNum);
 
-    int kol = countDecimalPlaces(TrueNum);
-    double AbsPog = 0.5 / pow(10, kol);
+    int wow = countDecimalPlaces(TrueNum);
+    double AbsPog = 0.5 / pow(10, wow);
     double OtnPog = (AbsPog / TrueNum) * 100;
-
     printf("\nПредельная абсолютная погрешность: %.6lf\n"
         "Предельная относительная погрешность: %.6lf%%\n\n", AbsPog, OtnPog);
 
