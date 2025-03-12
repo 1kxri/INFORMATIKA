@@ -1,0 +1,43 @@
+#define _CRT_SECURE_NO_WARNINGS 
+#include <stdio.h>
+#include <math.h> 
+#include <locale.h>
+
+double taylor_sin(double x, double eps) {
+        double term = x;
+        double sum = term;
+        int n = 1;
+
+        while (fabs(term) > eps) {
+            term *= -x * x / ((2 * n) * (2 * n + 1)); 
+            sum += term;
+            n++;
+        }
+        return sum;
+    }
+
+int main() {
+    setlocale(LC_ALL, "RUS");
+    double xn, xk, dx; 
+    double eps1 = 0.1, eps2 = 0.000001;
+    printf("Введите начальное значение xn: ");
+    scanf("%lf", &xn);
+    printf("Введите конечное значение xk: ");
+    scanf("%lf", &xk);
+    printf("Введите шаг dx: ");
+    scanf("%lf", &dx);
+    printf("\n ______________________________________________________________________________\n");
+    printf("|   x   |    f(x)    |     eps1    |     f1(x)    |     eps2    |     f2(x)    |\n");
+    
+    for (double x = xn; x <= xk; x += dx) {
+        printf("|   %.2f   |   %.4f   |   %.1f   |   %.6f   |   %.6f   |   f2(x)   |\n", x, taylor_sin(x, eps1), eps1, taylor_sin(x, eps2), eps2);
+       // printf("sin(%.2f) = %.4f\n", x, taylor_sin(x, eps1));
+    }
+
+
+   // for (double x = xn; x <= xk; x += dx) {
+    //    printf("sin(%.2f) = %.6f\n", x, taylor_sin(x, eps2));
+   // }
+
+    return 0;
+}
