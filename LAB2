@@ -16,6 +16,7 @@ double taylor_sin(double x, double eps) {
     }
     return sum;
 }
+
 int main() {
     setlocale(LC_ALL, "RUS");
     double xn, xk, dx;
@@ -39,74 +40,77 @@ int main() {
         printf("|  %.2f |   %.6f |     %.1f     |   %.6f   |   %.6f  |    %.6f  |\n",
             x, sin(x), eps1, f1, eps2, f2);
     }
-    printf(" ______________________________________________________________________________\n"); 
+    printf(" ______________________________________________________________________________\n");
 
+    // Задание 2
     printf("Задание 2\n");
     double a;
-    printf("\nВведите a: ");
-    scanf("%lf", &a); 
+    printf("Введите a: ");
+    scanf("%lf", &a);
     double x0 = a / 3;
+
     for (int i = 1; i < 10; ++i) {
-        double result = 2.0 / 3.0; 
+        double result = 2.0 / 3.0;
         result *= x0 + (a / (2 * x0 * x0));
         x0 = result;
     }
-    printf("%lf\n", x0); 
+    printf("Приближенное значение: %lf\n", x0);
 
-    printf("Задание 3\n");
+    // Задание 3
+    printf("\nЗадание 3\n");
     int n;
     printf("Введите n: ");
     scanf("%d", &n);
-    double m = DBL_MAX; 
+    double m = DBL_MAX;
     for (int k = 1; k <= n; ++k) {
-        double r = pow(k, 3) * sin((n + k / (double)n) * 3.14 / 180); 
-        printf("%lf\n", r);
+        double r = pow(k, 3) * sin((n + k / (double)n) * 3.14 / 180);
         if (r < m) {
-            m = r; 
+            m = r;
         }
     }
-    printf("Минимальное значение: %lf\n", m); 
+    printf("Минимальное значение: %lf\n", m);
 
-    printf("Задание 4\n");
+    // Задание 4
+    printf("\nЗадание 4\n");
     int n1;
     printf("Введите n: ");
     scanf("%d", &n1);
-    double a1 = 1.0, b1 = 1.0; 
-    double result = a1 * b1; 
+    double a1 = 1.0, b1 = 1.0;
+    double result = a1 * b1;
     for (int i = 2; i <= n1; ++i) {
-        double a = 0.5; 
-        double b = 2.0; 
-        a *= (sqrt(b1) + 0.5 * a1); 
+        double a = 0.5;
+        double b = 2.0;
+        a *= (sqrt(b1) + 0.5 * a1);
         b *= (a1 * a1 + b1);
-        a1 = a; 
-        b1 = b; 
-        printf("a%d * b%d = %lf\n", i, i, a1 * b1); 
-        result += a1 * b1; 
+        a1 = a;
+        b1 = b;
+        result += a1 * b1;
     }
-    printf("Результат: %lf\n", result); 
+    printf("Результат: %lf\n", result);
 
-    printf("Задание 5\n");
+    // Задание 5
+    printf("\nЗадание 5\n");
     double e = exp(1);
     double e1;
     printf("Введите погрешность: ");
-    scanf("%lf", &e1); 
+    scanf("%lf", &e1);
     printf("Первый предел:\n");
     for (int n = 0;; ++n) {
-        double x = pow(2, -n); 
-        double lim = sin(x) / x; 
-        if (fabs(lim - 1) <= e1) { 
+        double x = pow(2, -n);
+        double lim = sin(x) / x;
+        if (fabs(lim - 1) <= e1) {
             printf("lim = %lf, n = %d\n", lim, n);
             printf("Результат: %d\n", n);
-            break; 
+            break;
         }
     }
     printf("\nВторой предел:\n");
     for (int n = 1;; ++n) {
-        double lim = pow(1 + 1.0 / n, n); 
-        if (fabs(lim - e) <= e1) { 
+        double lim = pow(1 + 1.0 / n, n);
+        if (fabs(lim - e) <= e1) {
             printf("e = %lf, lim = %lf, n = %d\n", e, lim, n);
-            printf("Результат: %d\n", n);
-            break; 
+            printf("Результат : %d\n", n);
+            break;
         }
     }
     return 0;
