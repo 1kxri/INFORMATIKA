@@ -2,35 +2,112 @@
 #include <stdio.h>
 #include <math.h> 
 #include <locale.h>
+#include <float.h>
 
 double taylor_sin(double x, double eps) {
-        double term = x;
-        double sum = term;
-        int n = 1;
+    double term = x;
+    double sum = term;
+    int n = 1;
 
-        while (fabs(term) > eps) {
-            term *= -x * x / ((2 * n) * (2 * n + 1)); 
-            sum += term;
-            n++;
-        }
-        return sum;
+    while (fabs(term) > eps) {
+        term *= -x * x / ((2 * n) * (2 * n + 1));
+        sum += term;
+        n++;
     }
-
+    return sum;
+}
 int main() {
     setlocale(LC_ALL, "RUS");
-    double xn, xk, dx; 
+    double xn, xk, dx;
     double eps1 = 0.1, eps2 = 0.000001;
+
+    printf("Задание 1\n");
     printf("Введите начальное значение xn: ");
     scanf("%lf", &xn);
     printf("Введите конечное значение xk: ");
     scanf("%lf", &xk);
     printf("Введите шаг dx: ");
     scanf("%lf", &dx);
-    printf("\n ______________________________________________________________________________\n");
-    printf("|   x   |    f(x)    |     eps1    |     f1(x)    |     eps2    |     f2(x)    |\n");
-    for (double x = xn; x <= xk; x += dx) {
-        printf("|  %.2f |   %.6f   |     %.4f     |   %.1f   |   %.6f  |    %.6f      |\n", x, sin(x), eps1, taylor_sin(x, eps1), eps2, taylor_sin(x, eps2));
 
+    printf(" ______________________________________________________________________________\n");
+    printf("|   x   |    f(x)    |     eps1    |     f1(x)    |     eps2    |     f2(x)    |\n");
+
+    for (double x = xn; x <= xk; x += dx) {
+        double f1 = taylor_sin(x, eps1);
+        double f2 = taylor_sin(x, eps2);
+
+        printf("|  %.2f |   %.6f |     %.1f     |   %.6f   |   %.6f  |    %.6f  |\n",
+            x, sin(x), eps1, f1, eps2, f2);
+    }
+    printf(" ______________________________________________________________________________\n"); 
+
+    printf("Задание 2\n");
+    double a;
+    printf("\nВведите a: ");
+    scanf("%lf", &a); 
+    double x0 = a / 3;
+    for (int i = 1; i < 10; ++i) {
+        double result = 2.0 / 3.0; 
+        result *= x0 + (a / (2 * x0 * x0));
+        x0 = result;
+    }
+    printf("%lf\n", x0); 
+
+    printf("Задание 3\n");
+    int n;
+    printf("Введите n: ");
+    scanf("%d", &n);
+    double m = DBL_MAX; 
+    for (int k = 1; k <= n; ++k) {
+        double r = pow(k, 3) * sin((n + k / (double)n) * 3.14 / 180); 
+        printf("%lf\n", r);
+        if (r < m) {
+            m = r; 
+        }
+    }
+    printf("Минимальное значение: %lf\n", m); 
+
+    printf("Задание 4\n");
+    int n1;
+    printf("Введите n: ");
+    scanf("%d", &n1);
+    double a1 = 1.0, b1 = 1.0; 
+    double result = a1 * b1; 
+    for (int i = 2; i <= n1; ++i) {
+        double a = 0.5; 
+        double b = 2.0; 
+        a *= (sqrt(b1) + 0.5 * a1); 
+        b *= (a1 * a1 + b1);
+        a1 = a; 
+        b1 = b; 
+        printf("a%d * b%d = %lf\n", i, i, a1 * b1); 
+        result += a1 * b1; 
+    }
+    printf("Результат: %lf\n", result); 
+
+    printf("Задание 5\n");
+    double e = exp(1);
+    double e1;
+    printf("Введите погрешность: ");
+    scanf("%lf", &e1); 
+    printf("Первый предел:\n");
+    for (int n = 0;; ++n) {
+        double x = pow(2, -n); 
+        double lim = sin(x) / x; 
+        if (fabs(lim - 1) <= e1) { 
+            printf("lim = %lf, n = %d\n", lim, n);
+            printf("Результат: %d\n", n);
+            break; 
+        }
+    }
+    printf("\nВторой предел:\n");
+    for (int n = 1;; ++n) {
+        double lim = pow(1 + 1.0 / n, n); 
+        if (fabs(lim - e) <= e1) { 
+            printf("e = %lf, lim = %lf, n = %d\n", e, lim, n);
+            printf("Результат: %d\n", n);
+            break; 
+        }
     }
     return 0;
 }
