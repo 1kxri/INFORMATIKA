@@ -4,13 +4,13 @@
 #include <locale.h>
 #include <float.h>
 
-double taylor_sin(double x, double eps) {
+double taylor_sinh(double x, double eps) {
     double term = x;
     double sum = term;
     int n = 1;
 
     while (fabs(term) > eps) {
-        term *= -x * x / ((2 * n) * (2 * n + 1));
+        term *= x * x / ((2 * n) * (2 * n + 1));
         sum += term;
         n++;
     }
@@ -34,16 +34,16 @@ int main() {
     printf("|   x   |    f(x)    |     eps1    |     f1(x)    |     eps2    |     f2(x)    |\n");
 
     for (double x = xn; x <= xk; x += dx) {
-        double f1 = taylor_sin(x, eps1);
-        double f2 = taylor_sin(x, eps2);
+        double f1 = taylor_sinh(x, eps1);
+        double f2 = taylor_sinh(x, eps2);
 
         printf("|  %.2f |   %.6f |     %.1f     |   %.6f   |   %.6f  |    %.6f  |\n",
-            x, sin(x), eps1, f1, eps2, f2);
+            x, sinh(x), eps1, f1, eps2, f2);
     }
     printf(" ______________________________________________________________________________\n");
 
     // Задание 2
-    printf("Задание 2\n");
+    printf("\nЗадание 2\n");
     double a;
     printf("Введите a: ");
     scanf("%lf", &a);
