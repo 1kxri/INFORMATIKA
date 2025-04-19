@@ -1,0 +1,233 @@
+#define _USE_MATH_DEFINES 
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <stdio.h>
+#include <locale.h>
+#include <math.h>
+#include <time.h>
+
+// Прототипы функций
+double F(double x);
+double F1(double x);
+double F2(double x);
+double g(double x);
+int chord_method(double a, double b, double eps);
+int dichotomy(double a, double b, double eps);
+int newton_method(double a, double b, double eps);
+int simple_iteration(double a, double b, int max_iter, double eps);
+int secant_method(double a, double b, double eps);
+int combined_method(double a, double b, double eps);
+
+int main() {
+    setlocale(LC_ALL, "RUS");
+    double a, b, eps = 0.00001;
+    int method;
+    clock_t start, end;
+
+    printf("Выберите метод решения:\n");
+    printf("1. Метод хорд\n");
+    printf("2. Метод дихотомии\n");
+    printf("3. Метод Ньютона\n");
+    printf("4. Метод простых итераций\n");
+    printf("5. Метод секущих\n");
+    printf("6. Комбинированный метод\n");
+    scanf("%d", &method);
+
+    printf("Введите интервал [a, b]: ");
+    scanf("%lf %lf", &a, &b);
+
+    start = clock();
+
+    switch (method) {
+    case 1: chord_method(a, b, eps); break;
+    case 2: dichotomy(a, b, eps); break;
+    case 3: newton_method(a, b, eps); break;
+    case 4: simple_iteration(a, b, 100, eps); break;
+    case 5: secant_method(a, b, eps); break;
+    case 6: combined_method(a, b, eps); break;
+    default: printf("Неверный выбор метода\n");
+    }
+
+    end = clock();
+    printf("Время выполнения: %.6f сек.\n", (double)(end - start) / CLOCKS_PER_SEC);
+
+    return 0;
+}
+
+// Исходная функция: 2*arctg(x) - x + 3 = 0
+double F(double x) {
+    return 2 * atan(x) - x + 3;
+}
+
+// Первая производная: 2/(1+x²) - 1
+double F1(double x) {
+    return 2.0 / (1 + x * x) - 1;
+}
+
+// Вторая производная: -4x/(1+x²)²
+double F2(double x) {
+    return -4 * x / ((1 + x * x) * (1 + x * x));
+}
+
+// Функция для метода простых итераций
+double g(double x) {
+    return x - F(x) / F1(x);
+}
+
+// Метод хорд
+int chord_method(double a, double b, double eps) {
+    double x, x_prev = a;
+    double f_a = F(a);
+    double f_b = F(b);
+    int iter = 0;
+
+    if (f_a * f_b >= 0) {
+        printf("На отрезке нет корня или несколько корней\n");
+        return -1;
+    }
+
+    do {
+        x = a - f_a * (b - a) / (f_b - f_a);
+        if (F(x) * f_a < 0) {
+            b = x;
+            f_b = F(x);
+        }
+        else {
+            a = x;
+            f_a = F(x);
+        }
+        iter++;
+        x_prev = x;
+    } while (fabs(F(x)) > eps && iter < 1000);
+
+    printf("Метод хорд: x = %.6f, F(x) = %.6f, итераций: %d\n", x, F(x), iter);
+    return 0;
+}
+
+// Метод дихотомии
+int dichotomy(double a, double b, double eps) {
+    double c;
+    double f_a = F(a);
+    double f_b = F(b);
+    double f_c;
+    int iter = 0;
+
+    if (f_a * f_b >= 0) {
+        printf("На отрезке нет корня или несколько корней\n");
+        return -1;
+    }
+
+    do {
+        c = (a + b) / 2;
+        f_c = F(c);
+
+        if (f_c == 0) break;
+        if (f_a * f_c < 0) {
+            b = c;
+            f_b = f_c;
+        }
+        else {
+            a = c;
+            f_a = f_c;
+        }
+        iter++;
+    } while (fabs(b - a) > eps && iter < 1000);
+
+    printf("Метод дихотомии: x = %.6f, F(x) = %.6f, итераций: %d\n", c, F(c), iter);
+    return 0;
+}
+
+// Метод Ньютона
+int newton_method(double a, double b, double eps) {
+    double x = (F(a) * F2(a) > 0) ? a : b;
+    double h;
+    int iter = 0;
+
+    if (F(a) * F(b) >= 0) {
+        printf("На отрезке нет корня или несколько корней\n");
+        return -1;
+    }
+
+    do {
+        h = F(x) / F1(x);
+        x -= h;
+        iter++;
+    } while (fabs(h) > eps && iter < 1000);
+
+    printf("Метод Ньютона: x = %.6f, F(x) = %.6f, итераций: %d\n", x, F(x), iter);
+    return 0;
+}
+
+// Метод простых итераций
+int simple_iteration(double a, double b, int max_iter, double eps) {
+    double x = (a + b) / 2;
+    double x_prev;
+    int iter = 0;
+
+    if (F(a) * F(b) >= 0) {
+        printf("На отрезке нет корня или несколько корней\n");
+        return -1;
+    }
+
+    do {
+        x_prev = x;
+        x = g(x_prev);
+        iter++;
+    } while (fabs(x - x_prev) > eps && iter < max_iter);
+
+    printf("Метод простых итераций: x = %.6f, F(x) = %.6f, итераций: %d\n", x, F(x), iter);
+    return 0;
+}
+
+// Метод секущих
+int secant_method(double a, double b, double eps) {
+    double x0 = a;
+    double x1 = b;
+    double x2;
+    int iter = 0;
+
+    if (F(a) * F(b) >= 0) {
+        printf("На отрезке нет корня или несколько корней\n");
+        return -1;
+    }
+
+    do {
+        x2 = x1 - F(x1) * (x1 - x0) / (F(x1) - F(x0));
+        x0 = x1;
+        x1 = x2;
+        iter++;
+    } while (fabs(F(x2)) > eps && iter < 1000);
+
+    printf("Метод секущих: x = %.6f, F(x) = %.6f, итераций: %d\n", x2, F(x2), iter);
+    return 0;
+}
+
+// Комбинированный метод
+int combined_method(double a, double b, double eps) {
+    double an = a;
+    double bn = b;
+    int iter = 0;
+
+    if (F(a) * F(b) >= 0) {
+        printf("На отрезке нет корня или несколько корней\n");
+        return -1;
+    }
+
+    if (F1(a) * F2(a) > 0) {
+        an = a;
+        bn = b;
+    }
+    else {
+        bn = a;
+        an = b;
+    }
+
+    do {
+        an = an - F(an) * (bn - an) / (F(bn) - F(an));
+        bn = bn - F(bn) / F1(bn);
+        iter++;
+    } while (fabs(bn - an) > eps && iter < 1000);
+
+    printf("Комбинированный метод: x = %.6f, F(x) = %.6f, итераций: %d\n", (an + bn) / 2, F((an + bn) / 2), iter);
+    return 0;
+}
