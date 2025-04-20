@@ -1,0 +1,243 @@
+#define _USE_MATH_DEFINES 
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <stdio.h>
+#include <locale.h>
+#include <math.h>
+#include <time.h>
+
+// Исходная функция: 2*arctg(x) - x + 3 = 0
+double F(double x) {
+    return 2 * atan(x) - x + 3;
+}
+
+// Первая производная: 2/(1+x?) - 1
+double F1(double x) {
+    return 2.0 / (1 + x * x) - 1;
+}
+
+// Вторая производная: -4x/(1+x?)?
+double F2(double x) {
+    return -4 * x / ((1 + x * x) * (1 + x * x));
+}
+
+// Функция для метода простых итераций
+double g(double x) {
+    return x - F(x) / F1(x);
+}
+
+// Метод хорд
+void chord_method(double a, double b, double eps, double* result, int* iterations) {
+    double x, x_prev = a;
+    double f_a = F(a);
+    double f_b = F(b);
+    int iter = 0;
+
+    if (f_a * f_b >= 0) {
+        *result = NAN;
+        *iterations = 0;
+        return;
+    }
+
+    do {
+        x = a - f_a * (b - a) / (f_b - f_a);
+        if (F(x) * f_a < 0) {
+            b = x;
+            f_b = F(x);
+        }
+        else {
+            a = x;
+            f_a = F(x);
+        }
+        iter++;
+        x_prev = x;
+    } while (fabs(F(x)) > eps && iter < 1000);
+
+    *result = x;
+    *iterations = iter;
+}
+
+// Метод дихотомии
+void dichotomy(double a, double b, double eps, double* result, int* iterations) {
+    double c;
+    double f_a = F(a);
+    double f_b = F(b);
+    double f_c;
+    int iter = 0;
+
+    if (f_a * f_b >= 0) {
+        *result = NAN;
+        *iterations = 0;
+        return;
+    }
+
+    do {
+        c = (a + b) / 2;
+        f_c = F(c);
+
+        if (f_c == 0) break;
+        if (f_a * f_c < 0) {
+            b = c;
+            f_b = f_c;
+        }
+        else {
+            a = c;
+            f_a = f_c;
+        }
+        iter++;
+    } while (fabs(b - a) > eps && iter < 1000);
+
+    *result = c;
+    *iterations = iter;
+}
+
+// Метод Ньютона
+void newton_method(double a, double b, double eps, double* result, int* iterations) {
+    double x = (F(a) * F2(a) > 0) ? a : b;
+    double h;
+    int iter = 0;
+
+    if (F(a) * F(b) >= 0) {
+        *result = NAN;
+        *iterations = 0;
+        return;
+    }
+
+    do {
+        h = F(x) / F1(x);
+        x -= h;
+        iter++;
+    } while (fabs(h) > eps && iter < 1000);
+
+    *result = x;
+    *iterations = iter;
+}
+
+// Метод простых итераций
+void simple_iteration(double a, double b, double eps, double* result, int* iterations) {
+    double x = (a + b) / 2;
+    double x_prev;
+    int iter = 0;
+
+    if (F(a) * F(b) >= 0) {
+        *result = NAN;
+        *iterations = 0;
+        return;
+    }
+
+    do {
+        x_prev = x;
+        x = g(x_prev);
+        iter++;
+    } while (fabs(x - x_prev) > eps && iter < 1000);
+
+    *result = x;
+    *iterations = iter;
+}
+
+// Метод секущих
+void secant_method(double a, double b, double eps, double* result, int* iterations) {
+    double x0 = a;
+    double x1 = b;
+    double x2;
+    int iter = 0;
+
+    if (F(a) * F(b) >= 0) {
+        *result = NAN;
+        *iterations = 0;
+        return;
+    }
+
+    do {
+        x2 = x1 - F(x1) * (x1 - x0) / (F(x1) - F(x0));
+        x0 = x1;
+        x1 = x2;
+        iter++;
+    } while (fabs(F(x2)) > eps && iter < 1000);
+
+    *result = x2;
+    *iterations = iter;
+}
+
+// Комбинированный метод
+void combined_method(double a, double b, double eps, double* result, int* iterations) {
+    double an = a;
+    double bn = b;
+    int iter = 0;
+
+    if (F(a) * F(b) >= 0) {
+        *result = NAN;
+        *iterations = 0;
+        return;
+    }
+
+    if (F1(a) * F2(a) > 0) {
+        an = a;
+        bn = b;
+    }
+    else {
+        bn = a;
+        an = b;
+    }
+
+    do {
+        an = an - F(an) * (bn - an) / (F(bn) - F(an));
+        bn = bn - F(bn) / F1(bn);
+        iter++;
+    } while (fabs(bn - an) > eps && iter < 1000);
+
+    *result = (an + bn) / 2;
+    *iterations = iter;
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+    double a, b, eps = 0.00001;
+
+    printf("Введите интервал [a, b]: ");
+    while (scanf("%lf %lf", &a, &b) != 2) {
+        printf("Ошибка ввода. Введите два числа через пробел: ");
+        while (getchar() != '\n'); // Очистка буфера ввода
+    }
+
+    // Результаты для каждого метода
+    double results[6];
+    int iterations[6];
+    const char* method_names[6] = {
+        "Метод хорд",
+        "Метод дихотомии",
+        "Метод Ньютона",
+        "Метод простых итераций",
+        "Метод секущих",
+        "Комбинированный метод"
+    };
+
+    // Вычисление результатов для всех методов
+    chord_method(a, b, eps, &results[0], &iterations[0]);
+    dichotomy(a, b, eps, &results[1], &iterations[1]);
+    newton_method(a, b, eps, &results[2], &iterations[2]);
+    simple_iteration(a, b, eps, &results[3], &iterations[3]);
+    secant_method(a, b, eps, &results[4], &iterations[4]);
+    combined_method(a, b, eps, &results[5], &iterations[5]);
+
+    // Итоговая таблица с символами *
+    printf("\n");
+    printf("*************************************************************************\n");
+    printf("* %-28s * %-18s * %-18s *\n", "Метод", "Результат", "Итераций");
+    printf("*************************************************************************\n");
+
+    for (int i = 0; i < 6; i++) {
+        if (isnan(results[i])) {
+            printf("* %-28s * %-18s * %-18d *\n",
+                method_names[i], "-", iterations[i]);
+        }
+        else {
+            printf("* %-28s * %-18.6f * %-18d *\n",
+                method_names[i], results[i], iterations[i]);
+        }
+    }
+
+    printf("*************************************************************************\n");
+
+    return 0;
+}
