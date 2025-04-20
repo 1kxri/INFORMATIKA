@@ -51,7 +51,7 @@ void dichotomy(double a, double b, double eps, double* result, int* iterations) 
             f_a = f_c;
         }
         iter++;
-    } while (fabs(b - a) > eps && iter < 1000);
+    } while (fabs(b - a) > eps);
 
     *result = c;
     *iterations = iter;
@@ -85,7 +85,7 @@ void chord_method(double a, double b, double eps, double* result, int* iteration
             f_a = F(x);
         }
         iter++;
-    } while (fabs(F(x)) > eps && iter < 1000);
+    } while (fabs(F(x)) > eps);
 
     *result = x;
     *iterations = iter;
@@ -112,7 +112,7 @@ void simple_iteration(double a, double b, double eps, double* result, int* itera
         x = x - F(x) / F1(x);
         printf("    %3d    | %10.6f | %10.6f\n", iter + 1, x, F(x));
         iter++;
-    } while (fabs(x - x_prev) > eps && iter < 1000);
+    } while (fabs(x - x_prev) > eps);
 
     *result = x;
     *iterations = iter;
@@ -139,7 +139,7 @@ void newton_method(double a, double b, double eps, double* result, int* iteratio
         printf("    %3d    | %10.6f | %10.6f\n", iter + 1, x, F(x));
         x -= h;
         iter++;
-    } while (fabs(h) > eps && iter < 1000);
+    } while (fabs(h) > eps);
 
     *result = x;
     *iterations = iter;
@@ -166,7 +166,7 @@ void secant_method(double a, double b, double eps, double* result, int* iteratio
         x0 = x1;
         x1 = x2;
         iter++;
-    } while (fabs(F(x2)) > eps && iter < 1000);
+    } while (fabs(F(x2)) > eps);
 
     *result = x2;
     *iterations = iter;
@@ -201,7 +201,7 @@ void combined_method(double a, double b, double eps, double* result, int* iterat
         bn = bn - F(bn) / F1(bn);
         printf("    %3d    | %10.6f | %10.6f\n", iter + 1, (an + bn) / 2, F((an + bn) / 2));
         iter++;
-    } while (fabs(bn - an) > eps && iter < 1000);
+    } while (fabs(bn - an) > eps);
 
     *result = (an + bn) / 2;
     *iterations = iter;
