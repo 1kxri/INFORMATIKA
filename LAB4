@@ -1,0 +1,117 @@
+#define _USE_MATH_DEFINES 
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <stdio.h>
+#include <math.h>
+#include <locale.h>
+
+// Функция: (x + 1)/sqrt(x^2 + 1)
+double F(double x) {
+    return (x + 1) / sqrt(x * x + 1);
+}
+
+// Метод средних прямоугольников
+double method_medium_rect(double a, double b, int n) {
+    double h = (b - a) / n;
+    double S = 0;
+    for (int i = 1; i <= n; i++) {
+        S += F(a + (i - 0.5) * h);
+    }
+    return h * S;
+}
+
+// Метод левых прямоугольников
+double method_left_rect(double a, double b, int n) {
+    double h = (b - a) / n;
+    double S = 0;
+    for (int i = 0; i < n; i++) {
+        S += F(a + i * h);
+    }
+    return h * S;
+}
+
+// Метод правых прямоугольников
+double method_right_rect(double a, double b, int n) {
+    double h = (b - a) / n;
+    double S = 0;
+    for (int i = 1; i <= n; i++) {
+        S += F(a + i * h);
+    }
+    return h * S;
+}
+
+// Метод трапеций
+double method_trapezoid(double a, double b, int n) {
+    double h = (b - a) / n;
+    double S = 0;
+    for (int i = 1; i < n; i++) {
+        S += F(a + i * h);
+    }
+    return h * ((F(a) + F(b)) / 2 + S);
+}
+
+// Метод Симпсона
+double method_simpsons(double a, double b, int n) {
+    if (n % 2 != 0) n++;
+    double h = (b - a) / n;
+    double S1 = 0, S2 = 0;
+    for (int i = 1; i < n; i++) {
+        if (i % 2 == 0) {
+            S1 += F(a + i * h);
+        }
+        else {
+            S2 += F(a + i * h);
+        }
+    }
+    return h / 3 * (F(a) + F(b) + 2 * S1 + 4 * S2);
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+    const double integral = 1.1273998; // Точное значение интеграла
+    double a = -0.4, b = 1.6; // Границы интегрирования из изображения
+    int n, method;
+    double res;
+
+    printf("Вычисление интеграла от %.1f до %.1f функции (x+1)/sqrt(x^2+1)\n", a, b);
+    printf("Выберите метод:\n");
+    printf("1. Метод левых прямоугольников\n");
+    printf("2. Метод правых прямоугольников\n");
+    printf("3. Метод средних прямоугольников\n");
+    printf("4. Метод трапеций\n");
+    printf("5. Метод Симпсона\n");
+    printf("Введите номер метода: ");
+    scanf("%d", &method);
+
+    printf("Введите количество разбиений n: ");
+    scanf("%d", &n);
+
+    switch (method) {
+    case 1:
+        res = method_left_rect(a, b, n);
+        break;
+    case 2:
+        res = method_right_rect(a, b, n);
+        break;
+    case 3:
+        res = method_medium_rect(a, b, n);
+        break;
+    case 4:
+        res = method_trapezoid(a, b, n);
+        break;
+    case 5:
+        res = method_simpsons(a, b, n);
+        break;
+    default:
+        printf("Неверный выбор метода\n");
+        return 1;
+    }
+
+    printf("\nРезультаты:\n");
+    printf("Приближенное значение: %.7f\n", res);
+    printf("Точное значение: %.7f\n", integral);
+    printf("Абсолютная погрешность: %.7f\n", fabs(res - integral));
+    printf("Относительная погрешность: %.4f%%\n", fabs(res - integral) / integral * 100);
+
+    return 0;
+}
