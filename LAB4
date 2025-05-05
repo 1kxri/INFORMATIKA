@@ -10,6 +10,11 @@ double F(double x) {
     return (x + 1) / sqrt(x * x + 1);
 }
 
+// Первообразная функция: sqrt(x^2+1) + asinh(x)
+double integral_F(double x) {
+    return sqrt(x * x + 1) + asinh(x);
+}
+
 // Метод средних прямоугольников
 double method_medium_rect(double a, double b, int n) {
     double h = (b - a) / n;
@@ -68,10 +73,12 @@ double method_simpsons(double a, double b, int n) {
 
 int main() {
     setlocale(LC_ALL, "Russian");
-    const double integral = 2.4487819; 
-    double a = -0.4, b = 1.6; 
-    int n_values[] = { 4, 40, 140 };
+    double a = -0.4, b = 1.6;
+    int n_values[] = {4, 40, 140};
     int num_values = sizeof(n_values) / sizeof(n_values[0]);
+
+    // Вычисление точного значения через первообразную
+    double integral = integral_F(b) - integral_F(a);
 
     printf("Вычисление интеграла от %.1f до %.1f функции (x+1)/sqrt(x^2+1)\n", a, b);
     printf("Точное значение интеграла: %.7f\n\n", integral);
