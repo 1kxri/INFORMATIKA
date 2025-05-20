@@ -1,0 +1,30 @@
+#define _USE_MATH_DEFINES 
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <stdio.h>
+#include <math.h>
+#include <locale.h>
+
+int main() {
+    setlocale(LC_ALL, "RUS");
+    double x, y;
+
+    while (1) {
+        printf("Введите координаты точки (x y), или x = 9999 для выхода: ");
+        scanf("%lf %lf", &x, &y);
+
+        if (x == 9999) {
+            printf("Выход из программы.\n");
+            break;
+        }
+
+        if ((x > 0) && (x < 0.61) && (x * x + y * y < 1))
+            printf("Точка принадлежит области\n");
+        else if ((x < 0 || x > 0.61) || (x * x + y * y > 1))
+            printf("Точка не принадлежит области\n");
+        else
+            printf("Точка лежит на границе области\n");
+    }
+
+    return 0;
+}
