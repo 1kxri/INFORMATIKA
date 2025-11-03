@@ -2,39 +2,27 @@
 #include <stdio.h>
 #include <math.h>
 #define N 3
-#define MAX_ITER 10
+#define MAX_ITER 100
 
-// Прототипы функций
-void matrix_method(double A[N][N], double b[N], double x[N]);
-void gauss_method(double A[N][N], double b[N], double x[N]);
-void jacobi_method(double A[N][N], double b[N], double x[N]);
-void gauss_seidel_method(double A[N][N], double b[N], double x[N]);
-void print_results(double x[N], const char* method);
-void copy_matrix(double source[N][N], double destination[N][N]);
-void copy_vector(double source[N], double destination[N]);
+void print_results(double x[N], const char* method) {
+    printf("Результаты (%s):\n", method);
+    printf("x1 = %.6f\n", x[0]);
+    printf("x2 = %.6f\n", x[1]);
+    printf("x3 = %.6f\n\n", x[2]);
+}
 
-int main() {
-    setlocale(LC_ALL, "RUS");
+void copy_matrix(double source[N][N], double destination[N][N]) {
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            destination[i][j] = source[i][j];
+        }
+    }
+}
 
-    double A[N][N] = {
-        {4.1,  5.2, -5.8},
-        {3.8, -3.1,  4.1},
-        {7.8,  5.3, -6.3}
-    };
-    double b[N] = { 7.1, 5.3, 5.8 };
-    double x[N] = { 0, 0, 0 }; // Начальные значения
-    printf("Решение с использованием матричного метода:\n");
-    matrix_method(A, b, x);
-    printf("\nРешение с использованием метода Гаусса:\n");
-    double A2[N][N], b2[N];
-    copy_matrix(A, A2);
-    copy_vector(b, b2);
-    gauss_method(A2, b2, x);
-    printf("\nРешение с использованием метода Якоби:\n");
-    jacobi_method(A, b, x);
-    printf("\nРешение с использованием метода Зейделя:\n");
-    gauss_seidel_method(A, b, x);
-    return 0;
+void copy_vector(double source[N], double destination[N]) {
+    for (int i = 0; i < N; i++) {
+        destination[i] = source[i];
+    }
 }
 
 void matrix_method(double A[N][N], double b[N], double x[N]) {
@@ -76,6 +64,7 @@ void matrix_method(double A[N][N], double b[N], double x[N]) {
     // Вывод результатов
     print_results(x, "Матричный метод");
 }
+
 void gauss_method(double A[N][N], double b[N], double x[N]) {
     for (int i = 0; i < N; i++) {
         for (int j = i + 1; j < N; j++) {
@@ -98,12 +87,23 @@ void gauss_method(double A[N][N], double b[N], double x[N]) {
     print_results(x, "Метод Гаусса");
 }
 
-void jacobi_method(double A[N][N], double b[N], double x[N]) {
+void jacobi_method_eps(double A[N][N], double b[N], double x[N], double eps) {
     double x_new[N];
+    int iterations = 0;
+    double max_error;
 
-    // Вывод результатов
-    printf("i\t x1\t x2\t x3\n");
-    for (int i = 0; i < MAX_ITER; i++) {
+    printf("Итерация\t x1\t\t x2\t\t x3\t\t Погрешность\n");
+    printf("------------------------------------------------------------------------\n");
+
+    // Инициализация начальными значениями
+    for (int i = 0; i < N; i++) {
+        x[i] = 0;
+    }
+
+    do {
+        iterations++;
+        max_error = 0;
+
         for (int j = 0; j < N; j++) {
             x_new[j] = b[j];
             for (int k = 0; k < N; k++) {
@@ -112,221 +112,126 @@ void jacobi_method(double A[N][N], double b[N], double x[N]) {
                 }
             }
             x_new[j] /= A[j][j];
+
+            double error = fabs(x_new[j] - x[j]);
+            if (error > max_error) {
+                max_error = error;
+            }
         }
 
-        printf("%d\t %.4f\t %.4f\t %.4f\n", i + 1, x_new[0], x_new[1], x_new[2]);
+        printf("%d\t\t %.6f\t %.6f\t %.6f\t %.6f\n",
+            iterations, x_new[0], x_new[1], x_new[2], max_error);
 
         for (int j = 0; j < N; j++) {
             x[j] = x_new[j];
         }
-    }
+
+        if (max_error < eps || iterations >= MAX_ITER) {
+            break;
+        }
+    } while (1);
+
+    printf("\nВсего итераций: %d\n", iterations);
     print_results(x, "Метод Якоби");
 }
 
-void gauss_seidel_method(double A[N][N], double b[N], double x[N]) {
-    double x_new[N];
+void gauss_seidel_method_eps(double A[N][N], double b[N], double x[N], double eps) {
+    double x_old[N];
+    int iterations = 0;
+    double max_error;
 
-    // Вывод результатов
-    printf("i\t x1\t x2\t x3\n");
-    for (int i = 0; i < MAX_ITER; i++) {
+    printf("Итерация\t x1\t\t x2\t\t x3\t\t Погрешность\n");
+    printf("------------------------------------------------------------------------\n");
+
+    // Инициализация начальными значениями
+    for (int i = 0; i < N; i++) {
+        x[i] = 0;
+        x_old[i] = 0;
+    }
+
+    do {
+        iterations++;
+        max_error = 0;
+
         for (int j = 0; j < N; j++) {
-            x_new[j] = b[j];
+            double sum = b[j];
             for (int k = 0; k < N; k++) {
                 if (k != j) {
-                    x_new[j] -= A[j][k] * (k < j ? x_new[k] : x[k]);
+                    sum -= A[j][k] * x[k];
                 }
             }
-            x_new[j] /= A[j][j];
+            double new_val = sum / A[j][j];
+
+            double error = fabs(new_val - x_old[j]);
+            if (error > max_error) {
+                max_error = error;
+            }
+
+            x_old[j] = x[j];
+            x[j] = new_val;
         }
 
-        printf("%d\t %.4f\t %.4f\t %.4f\n", i + 1, x_new[0], x_new[1], x_new[2]);
+        printf("%d\t\t %.6f\t %.6f\t %.6f\t %.6f\n",
+            iterations, x[0], x[1], x[2], max_error);
 
-        for (int j = 0; j < N; j++) {
-            x[j] = x_new[j];
+        if (max_error < eps || iterations >= MAX_ITER) {
+            break;
         }
-    }
+
+        for (int i = 0; i < N; i++) {
+            x_old[i] = x[i];
+        }
+    } while (1);
+
+    printf("\nВсего итераций: %d\n", iterations);
     print_results(x, "Метод Зейделя");
 }
-
-void print_results(double x[N], const char* method) {
-    printf("Результаты (%s):\n", method);
-    printf("x1 = %.4f\t x2 = %.4f\t x3 = %.4f\n", x[0], x[1], x[2]);
-}
-void copy_matrix(double source[N][N], double destination[N][N]) {
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            destination[i][j] = source[i][j];
-        }
-    }
-}
-void copy_vector(double source[N], double destination[N]) {
-    for (int i = 0; i < N; i++) {
-        destination[i] = source[i];
-    }
-}
-#include <locale.h>
-#include <stdio.h>
-#include <math.h>
-#define N 3
-#define MAX_ITER 10
-
-// Прототипы функций
-void matrix_method(double A[N][N], double b[N], double x[N]);
-void gauss_method(double A[N][N], double b[N], double x[N]);
-void jacobi_method(double A[N][N], double b[N], double x[N]);
-void gauss_seidel_method(double A[N][N], double b[N], double x[N]);
-void print_results(double x[N], const char* method);
-void copy_matrix(double source[N][N], double destination[N][N]);
-void copy_vector(double source[N], double destination[N]);
 
 int main() {
     setlocale(LC_ALL, "RUS");
 
-    double A[N][N] = {
+    // Первая система для матричного метода и Гаусса
+    double A1[N][N] = {
         {4.1,  5.2, -5.8},
         {3.8, -3.1,  4.1},
         {7.8,  5.3, -6.3}
     };
-    double b[N] = { 7.1, 5.3, 5.8 };
-    double x[N] = { 0, 0, 0 }; // Начальные значения
+    double b1[N] = { 7.1, 5.3, 5.8 };
+    double x1[N] = { 0, 0, 0 };
+
+    // Вторая система для Якоби и Зейделя
+    double A2[N][N] = {
+        {10, 1, -1},
+        {1, 10, -1},
+        {-1, 1, 10}
+    };
+    double b2[N] = { 11, 10, 10 };
+    double x2[N] = { 0, 0, 0 };
+
     printf("Решение с использованием матричного метода:\n");
-    matrix_method(A, b, x);
+    matrix_method(A1, b1, x1);
+
     printf("\nРешение с использованием метода Гаусса:\n");
-    double A2[N][N], b2[N];
-    copy_matrix(A, A2);
-    copy_vector(b, b2);
-    gauss_method(A2, b2, x);
-    printf("\nРешение с использованием метода Якоби:\n");
-    jacobi_method(A, b, x);
-    printf("\nРешение с использованием метода Зейделя:\n");
-    gauss_seidel_method(A, b, x);
+    double A1_copy[N][N], b1_copy[N];
+    copy_matrix(A1, A1_copy);
+    copy_vector(b1, b1_copy);
+    gauss_method(A1_copy, b1_copy, x1);
+
+    printf("Решение с использованием метода Якоби (eps=0.01):\n");
+    double x_jacobi_001[N] = { 0, 0, 0 };
+    jacobi_method_eps(A2, b2, x_jacobi_001, 0.01);
+
+    printf("\nРешение с использованием метода Якоби (eps=0.00001):\n");
+    double x_jacobi_00001[N] = { 0, 0, 0 };
+    jacobi_method_eps(A2, b2, x_jacobi_00001, 0.00001);
+
+    printf("\nРешение с использованием метода Зейделя (eps=0.01):\n");
+    double x_seidel_001[N] = { 0, 0, 0 };
+    gauss_seidel_method_eps(A2, b2, x_seidel_001, 0.01);
+
+    printf("\nРешение с использованием метода Зейделя (eps=0.00001):\n");
+    double x_seidel_00001[N] = { 0, 0, 0 };
+    gauss_seidel_method_eps(A2, b2, x_seidel_00001, 0.00001);
+
     return 0;
-}
-
-void matrix_method(double A[N][N], double b[N], double x[N]) {
-    double temp[N][N];
-    double temp_b[N];
-
-    // Копируем матрицу A и вектор b для работы
-    copy_matrix(A, temp);
-    copy_vector(b, temp_b);
-
-    // Прямой ход метода Гаусса
-    for (int i = 0; i < N; i++) {
-        // Проверка на нулевой элемент
-        if (temp[i][i] == 0) {
-            printf("Ошибка: матрица вырождена!\n");
-            return;
-        }
-
-        for (int j = i + 1; j < N; j++) {
-            double ratio = temp[j][i] / temp[i][i];
-            // Обнуление элемент в j-ой строке
-            for (int k = i; k < N; k++) {
-                temp[j][k] -= ratio * temp[i][k];
-            }
-            // Обнуление соответствующего элемента в b
-            temp_b[j] -= ratio * temp_b[i];
-        }
-    }
-
-    // Обратный ход — нахождение значений переменных
-    for (int i = N - 1; i >= 0; i--) {
-        x[i] = temp_b[i];
-        for (int j = i + 1; j < N; j++) {
-            x[i] -= temp[i][j] * x[j];
-        }
-        x[i] /= temp[i][i];
-    }
-
-    // Вывод результатов
-    print_results(x, "Матричный метод");
-}
-void gauss_method(double A[N][N], double b[N], double x[N]) {
-    for (int i = 0; i < N; i++) {
-        for (int j = i + 1; j < N; j++) {
-            double ratio = A[j][i] / A[i][i];
-            for (int k = i; k < N; k++) {
-                A[j][k] -= ratio * A[i][k];
-            }
-            b[j] -= ratio * b[i];
-        }
-    }
-
-    for (int i = N - 1; i >= 0; i--) {
-        x[i] = b[i];
-        for (int j = i + 1; j < N; j++) {
-            x[i] -= A[i][j] * x[j];
-        }
-        x[i] /= A[i][i];
-    }
-
-    print_results(x, "Метод Гаусса");
-}
-
-void jacobi_method(double A[N][N], double b[N], double x[N]) {
-    double x_new[N];
-
-    // Вывод результатов
-    printf("i\t x1\t x2\t x3\n");
-    for (int i = 0; i < MAX_ITER; i++) {
-        for (int j = 0; j < N; j++) {
-            x_new[j] = b[j];
-            for (int k = 0; k < N; k++) {
-                if (k != j) {
-                    x_new[j] -= A[j][k] * x[k];
-                }
-            }
-            x_new[j] /= A[j][j];
-        }
-
-        printf("%d\t %.4f\t %.4f\t %.4f\n", i + 1, x_new[0], x_new[1], x_new[2]);
-
-        for (int j = 0; j < N; j++) {
-            x[j] = x_new[j];
-        }
-    }
-    print_results(x, "Метод Якоби");
-}
-
-void gauss_seidel_method(double A[N][N], double b[N], double x[N]) {
-    double x_new[N];
-
-    // Вывод результатов
-    printf("i\t x1\t x2\t x3\n");
-    for (int i = 0; i < MAX_ITER; i++) {
-        for (int j = 0; j < N; j++) {
-            x_new[j] = b[j];
-            for (int k = 0; k < N; k++) {
-                if (k != j) {
-                    x_new[j] -= A[j][k] * (k < j ? x_new[k] : x[k]);
-                }
-            }
-            x_new[j] /= A[j][j];
-        }
-
-        printf("%d\t %.4f\t %.4f\t %.4f\n", i + 1, x_new[0], x_new[1], x_new[2]);
-
-        for (int j = 0; j < N; j++) {
-            x[j] = x_new[j];
-        }
-    }
-    print_results(x, "Метод Зейделя");
-}
-
-void print_results(double x[N], const char* method) {
-    printf("Результаты (%s):\n", method);
-    printf("x1 = %.4f\t x2 = %.4f\t x3 = %.4f\n", x[0], x[1], x[2]);
-}
-void copy_matrix(double source[N][N], double destination[N][N]) {
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            destination[i][j] = source[i][j];
-        }
-    }
-}
-void copy_vector(double source[N], double destination[N]) {
-    for (int i = 0; i < N; i++) {
-        destination[i] = source[i];
-    }
 }
