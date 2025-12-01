@@ -1,0 +1,114 @@
+#include <locale.h>
+#include <stdio.h>
+#include <math.h>
+
+#define PI 3.141592653589793
+#define EPSILON 0.0001 // Погрешность
+#define INITIAL_STEP 0.5 // Начальный шаг
+
+
+double g(double x) {
+    return -sin(x + 1); // g(x) = -sin(x+1)
+}
+
+double phi(double x) {
+    return exp(-x * x); // φ(x) = e^{-x²}
+}
+
+double psi(double x) {
+    return 0.01; // ψ(x) = 0.01
+}
+
+// Правая часть дифференциального уравнения: f(x, y) = g(x) * φ(x) + ψ(x)
+double f(double x, double y) {
+    return g(x) * phi(x) + psi(x);
+}
+
+// Первая модификация Эйлера (один шаг)
+double trapezoidal_euler_step(double x, double y, double h) {
+    double k1 = f(x, y);
+    double y_half = y + (h / 2) * k1;
+    double x_half = x + h / 2;
+    double k2 = f(x_half, y_half);
+    return y + h * k2;
+}
+
+// Метод с автоматическим шагом
+int solve_auto(double x0, double y0, double b, double h0, double eps) {
+    printf("*-----------------------------------------------*\n");
+    printf("| Шаг  |     x      |      y       |      h     |\n");
+    printf("*-----------------------------------------------*\n");
+
+    double x = x0;
+    double y = y0;
+    double h = h0;
+    int step_num = 0;
+
+    while (x < b - 1e-10) {
+        if (x + h > b) h = b - x;
+
+        double y1 = trapezoidal_euler_step(x, y, h);
+        double y2 = trapezoidal_euler_step(x + h, y1, h);
+        double y2h = trapezoidal_euler_step(x, y, 2 * h);
+
+        double R = fabs(y2 - y2h) / 3.0;
+
+        if (R > eps && h > 1e-6) {
+            h /= 2.0;
+            continue;
+        }
+
+        step_num++;
+        printf("| %4d | %10.6f | %12.6f | %10.6f |\n",
+            step_num, x, y, h);
+
+        x += h;
+        y = y2;
+
+        if (R < eps / 4.0)
+            h *= 2.0;
+    }
+
+    printf("*-----------------------------------------------*\n");
+    return step_num;
+}
+
+// Метод с постоянным шагом
+void solve_fixed(double x0, double y0, double b, int total_steps) {
+    printf("*-----------------------------------------------*\n");
+    printf("| Шаг  |     x      |      y       |      h     |\n");
+    printf("*-----------------------------------------------*\n");
+
+    double x = x0;
+    double y = y0;
+    double h = (b - x0) / total_steps;
+
+    printf("| %4d | %10.6f | %12.6f | %10.6f |\n",
+        0, x, y, 0.0);
+
+    for (int i = 1; i <= total_steps; i++) {
+        y = trapezoidal_euler_step(x, y, h);
+        x += h;
+        printf("| %4d | %10.6f | %12.6f | %10.6f |\n",
+            i, x, y, h);
+    }
+
+    printf("*-----------------------------------------------*\n");
+}
+
+int main() {
+    setlocale(LC_ALL, "RUS");
+
+    double x0 = -1.0;
+    double y0 = 8.0;
+    double b = 2 * PI - 1;
+    double eps = 1e-3;
+
+    printf("- Автоматический выбор шага:\n");
+    int total_steps = solve_auto(x0, y0, b, INITIAL_STEP, eps);
+
+    printf("\n- Постоянный шаг:\n");
+    solve_fixed(x0, y0, b, total_steps);
+
+    return 0;
+}
