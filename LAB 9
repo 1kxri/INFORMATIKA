@@ -5,137 +5,9 @@
 #include <locale.h>
 #define ROWS 5
 #define COLS 5
-
-// Прототипы функций
-void solveTransportProblem(double supply[], double demand[], double costs[ROWS][COLS]);
-void balanceProblem(double supply[], double demand[], double costs[ROWS][COLS], int* m, int* n);
-double** northWestCorner(double supply[], double demand[], int m, int n);
-double** minimumCost(double supply[], double demand[], double costs[ROWS][COLS], int m, int n);
-double calculateCost(double** plan, double costs[ROWS][COLS], int m, int n);
-void optimizePlan(double** plan, double supply[], double demand[], double costs[ROWS][COLS], int m, int n);
-void printMatrix(double** matrix, int m, int n);
-void printPlan(double** plan, double costs[ROWS][COLS], int m, int n);
-
-int main() {
-    setlocale(LC_ALL, "RUS");
-    // Данные из изображения (первая строка - потребности, остальное - поставки и стоимости)
-    double supply[ROWS] = { 68, 82, 44, 27, 82 };
-    double demand[COLS] = { 14, 79, 54, 92, 64 };
-
-    // Матрица стоимостей из изображения (строки 2-6)
-    double costs[ROWS][COLS] = {
-        {1, 7, 7, 3, 3},
-        {6, 3, 8, 8, 1},
-        {5, 3, 5, 5, 3},
-        {1, 7, 5, 3, 4},
-        {2, 5, 7, 3, 3}
-    };
-
-    printf("=== РЕШЕНИЕ ТРАНСПОРТНОЙ ЗАДАЧИ ===\n\n");
-
-    solveTransportProblem(supply, demand, costs);
-
-    return 0;
-}
-
-void solveTransportProblem(double supply[], double demand[], double costs[ROWS][COLS]) {
-    int m = ROWS;
-    int n = COLS;
-
-    // 1. Проверка баланса
-    double totalSupply = 0, totalDemand = 0;
-
-    printf("Матрица стоимостей:\n");
-    for (int i = 0; i < m; i++) {
-        for (int j = 0; j < n; j++) {
-            printf("%6.0f", costs[i][j]);
-        }
-        printf("\n");
-    }
-
-    printf("\nЗапасы: ");
-    for (int i = 0; i < m; i++) {
-        printf("%.0f ", supply[i]);
-        totalSupply += supply[i];
-    }
-
-    printf("\nПотребности: ");
-    for (int j = 0; j < n; j++) {
-        printf("%.0f ", demand[j]);
-        totalDemand += demand[j];
-    }
-
-    printf("\nСумма запасов = %.0f\n", totalSupply);
-    printf("Сумма потребностей = %.0f\n", totalDemand);
-
-    if (fabs(totalSupply - totalDemand) > 0.001) {
-        printf("Баланс не выполнен. Добавляем фиктивного потребителя/поставщика.\n");
-        balanceProblem(supply, demand, costs, &m, &n);
-    }
-    else {
-        printf("Баланс выполнен.\n");
-    }
-
-    // 3. Построение опорных планов
-    printf("\n=== МЕТОД СЕВЕРО-ЗАПАДНОГО УГЛА ===\n");
-    double** planNW = northWestCorner(supply, demand, m, n);
-    printPlan(planNW, costs, m, n);
-    double costNW = calculateCost(planNW, costs, m, n);
-    printf("Стоимость: %.0f\n", costNW);
-
-    printf("\n=== МЕТОД МИНИМАЛЬНОГО ЭЛЕМЕНТА ===\n");
-    double** planMin = minimumCost(supply, demand, costs, m, n);
-    printPlan(planMin, costs, m, n);
-    double costMin = calculateCost(planMin, costs, m, n);
-    printf("Стоимость: %.0f\n", costMin);
-
-    // 4. Выбор лучшего плана
-    double** bestPlan;
-    double bestCost;
-    char* planName;
-
-    if (costNW < costMin) {
-        bestPlan = planNW;
-        bestCost = costNW;
-        planName = "Северо-западного угла";
-        // Освобождаем память от неиспользуемого плана
-        for (int i = 0; i < m; i++) free(planMin[i]);
-        free(planMin);
-    }
-    else {
-        bestPlan = planMin;
-        bestCost = costMin;
-        planName = "Минимального элемента";
-        // Освобождаем память от неиспользуемого плана
-        for (int i = 0; i < m; i++) free(planNW[i]);
-        free(planNW);
-    }
-
-    printf("\n=== ВЫБОР ЛУЧШЕГО ПЛАНА ===\n");
-    printf("Стоимость С-З угла: %.0f\n", costNW);
-    printf("Стоимость мин. элемента: %.0f\n", costMin);
-    printf("Разница стоимости: %.0f\n", fabs(costNW - costMin));
-    printf("Выбран план: %s\n", planName);
-
-    // 5-8. Оптимизация методом потенциалов
-    printf("\n=== ОПТИМИЗАЦИЯ МЕТОДОМ ПОТЕНЦИАЛОВ ===\n");
-    optimizePlan(bestPlan, supply, demand, costs, m, n);
-
-    printf("\n=== ОПТИМАЛЬНЫЙ ПЛАН ===\n");
-    printPlan(bestPlan, costs, m, n);
-    double finalCost = calculateCost(bestPlan, costs, m, n);
-    printf("Общая стоимость: %.0f\n", finalCost);
-
-    // Освобождение памяти
-    for (int i = 0; i < m; i++) free(bestPlan[i]);
-    free(bestPlan);
-}
+#define EPS 0.001
 
 void balanceProblem(double supply[], double demand[], double costs[ROWS][COLS], int* m, int* n) {
-    // В данном случае сумма запасов = 68+82+44+27+82 = 303
-    // Сумма потребностей = 14+79+54+92+64 = 303
-    // Баланс уже выполнен, но оставим функцию для общего случая
-
     double totalSupply = 0, totalDemand = 0;
     for (int i = 0; i < *m; i++) totalSupply += supply[i];
     for (int j = 0; j < *n; j++) totalDemand += demand[j];
@@ -143,6 +15,59 @@ void balanceProblem(double supply[], double demand[], double costs[ROWS][COLS], 
     printf("После балансировки:\n");
     printf("Сумма запасов = %.0f\n", totalSupply);
     printf("Сумма потребностей = %.0f\n", totalDemand);
+}
+
+void printPlan(double** plan, double costs[ROWS][COLS], int m, int n) {
+    printf("План перевозок:\n");
+
+    // Заголовок с потребностями
+    printf("        ");
+    for (int j = 0; j < n; j++) {
+        printf("%6d", j + 1);
+    }
+    printf("   Запасы\n");
+
+    // Матрица плана
+    for (int i = 0; i < m; i++) {
+        printf("A%d      ", i + 1);
+        double rowSum = 0;
+        for (int j = 0; j < n; j++) {
+            printf("%6.0f", plan[i][j]);
+            rowSum += plan[i][j];
+        }
+        printf("   %6.0f\n", rowSum);
+    }
+
+    // Потребности
+    printf("Потр.   ");
+    for (int j = 0; j < n; j++) {
+        double colSum = 0;
+        for (int i = 0; i < m; i++) {
+            colSum += plan[i][j];
+        }
+        printf("%6.0f", colSum);
+    }
+    printf("\n");
+
+    // Стоимости перевозок
+    printf("\nСтоимости перевозок (объем * цена):\n");
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (plan[i][j] > 0) {
+                printf("A%d->B%d: %.0f * %.0f = %.0f\n",
+                    i + 1, j + 1, plan[i][j], costs[i][j], plan[i][j] * costs[i][j]);
+            }
+        }
+    }
+}
+
+void printMatrix(double** matrix, int m, int n) {
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            printf("%6.0f", matrix[i][j]);
+        }
+        printf("\n");
+    }
 }
 
 double** northWestCorner(double supply[], double demand[], int m, int n) {
@@ -232,69 +157,327 @@ double calculateCost(double** plan, double costs[ROWS][COLS], int m, int n) {
     return total;
 }
 
-void optimizePlan(double** plan, double supply[], double demand[], double costs[ROWS][COLS], int m, int n) {
-    // Упрощенная версия оптимизации для C
-    // В реальной задаче нужно реализовать полный метод потенциалов
+bool dfsCycle(double** plan, int m, int n, int* visitedRows, int* visitedCols,
+    int* pathI, int* pathJ, int pathSize, int startI, int startJ,
+    int curI, int curJ, bool isRowSearch, int* finalPathLen) {
 
-    printf("Оптимизация плана...\n");
+    if (pathSize > m + n) return false;
 
-    // Простая проверка - если план уже оптимален
-    double currentCost = calculateCost(plan, costs, m, n);
-    printf("Текущая стоимость: %.0f\n", currentCost);
-
-    // В реальной реализации здесь должен быть полный метод потенциалов
-    // с вычислением u и v, оценкой свободных клеток и перераспределением груза
-}
-
-void printPlan(double** plan, double costs[ROWS][COLS], int m, int n) {
-    printf("План перевозок:\n");
-
-    // Заголовок с потребностями
-    printf("        ");
-    for (int j = 0; j < n; j++) {
-        printf("%6d", j + 1);
+    // Проверяем, вернулись ли в начальную клетку
+    if (pathSize > 1 && curI == startI && curJ == startJ) {
+        *finalPathLen = pathSize;
+        return true;
     }
-    printf("   Запасы\n");
 
-    // Матрица плана
-    for (int i = 0; i < m; i++) {
-        printf("A%d      ", i + 1);
-        double rowSum = 0;
+    if (isRowSearch) {
+        // Ищем в текущей строке базисные клетки
         for (int j = 0; j < n; j++) {
-            printf("%6.0f", plan[i][j]);
-            rowSum += plan[i][j];
-        }
-        printf("   %6.0f\n", rowSum);
-    }
+            if (j != curJ && plan[curI][j] > EPS && !visitedCols[j]) {
+                visitedCols[j] = 1;
+                pathI[pathSize] = curI;
+                pathJ[pathSize] = j;
 
-    // Потребности
-    printf("Потр.   ");
-    for (int j = 0; j < n; j++) {
-        double colSum = 0;
-        for (int i = 0; i < m; i++) {
-            colSum += plan[i][j];
-        }
-        printf("%6.0f", colSum);
-    }
-    printf("\n");
+                if (dfsCycle(plan, m, n, visitedRows, visitedCols,
+                    pathI, pathJ, pathSize + 1, startI, startJ,
+                    curI, j, false, finalPathLen)) {
+                    return true;
+                }
 
-    // Стоимости перевозок
-    printf("\nСтоимости перевозок (объем * цена):\n");
-    for (int i = 0; i < m; i++) {
-        for (int j = 0; j < n; j++) {
-            if (plan[i][j] > 0) {
-                printf("A%d->B%d: %.0f * %.0f = %.0f\n",
-                    i + 1, j + 1, plan[i][j], costs[i][j], plan[i][j] * costs[i][j]);
+                visitedCols[j] = 0;
             }
         }
     }
+    else {
+        // Ищем в текущем столбце базисные клетки
+        for (int i = 0; i < m; i++) {
+            if (i != curI && plan[i][curJ] > EPS && !visitedRows[i]) {
+                visitedRows[i] = 1;
+                pathI[pathSize] = i;
+                pathJ[pathSize] = curJ;
+
+                if (dfsCycle(plan, m, n, visitedRows, visitedCols,
+                    pathI, pathJ, pathSize + 1, startI, startJ,
+                    i, curJ, true, finalPathLen)) {
+                    return true;
+                }
+
+                visitedRows[i] = 0;
+            }
+        }
+    }
+
+    return false;
 }
 
-void printMatrix(double** matrix, int m, int n) {
+bool findCycle(double** plan, int m, int n, int startI, int startJ,
+    int* pathI, int* pathJ, int* pathLen) {
+
+    int* visitedRows = (int*)calloc(m, sizeof(int));
+    int* visitedCols = (int*)calloc(n, sizeof(int));
+
+    // Инициализация пути
+    for (int i = 0; i < m + n; i++) {
+        pathI[i] = -1;
+        pathJ[i] = -1;
+    }
+
+    pathI[0] = startI;
+    pathJ[0] = startJ;
+
+    int finalPathLen = 0;
+
+    // Начинаем поиск с поиска по строке
+    bool found = dfsCycle(plan, m, n, visitedRows, visitedCols,
+        pathI, pathJ, 1, startI, startJ,
+        startI, startJ, true, &finalPathLen);
+
+    if (found) {
+        *pathLen = finalPathLen;
+    }
+
+    free(visitedRows);
+    free(visitedCols);
+
+    return found;
+}
+
+void optimizePlan(double** plan, double supply[], double demand[], double costs[ROWS][COLS], int m, int n) {
+    printf("Оптимизация плана методом потенциалов...\n");
+
+    int iteration = 0;
+    bool optimal = false;
+
+    while (!optimal && iteration < 100) {
+        iteration++;
+        printf("\n--- Итерация %d ---\n", iteration);
+
+        // 1. Вычисление потенциалов
+        double* u = (double*)calloc(m, sizeof(double));
+        double* v = (double*)calloc(n, sizeof(double));
+
+        // Инициализация: u[0] = 0
+        u[0] = 0;
+
+        // Вычисляем потенциалы
+        bool changed;
+        do {
+            changed = false;
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (plan[i][j] > EPS) {
+                        if (u[i] != 0 && v[j] == 0) {
+                            v[j] = costs[i][j] - u[i];
+                            changed = true;
+                        }
+                        else if (v[j] != 0 && u[i] == 0) {
+                            u[i] = costs[i][j] - v[j];
+                            changed = true;
+                        }
+                    }
+                }
+            }
+        } while (changed);
+
+        printf("Потенциалы u: ");
+        for (int i = 0; i < m; i++) printf("%.1f ", u[i]);
+        printf("\nПотенциалы v: ");
+        for (int j = 0; j < n; j++) printf("%.1f ", v[j]);
+        printf("\n");
+
+        // 2. Проверка оптимальности (оценка свободных клеток)
+        int bestI = -1, bestJ = -1;
+        double minDelta = 0;
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (plan[i][j] < EPS) {
+                    double delta = costs[i][j] - (u[i] + v[j]);
+                    if (delta < minDelta - EPS) {
+                        minDelta = delta;
+                        bestI = i;
+                        bestJ = j;
+                    }
+                }
+            }
+        }
+
+        if (bestI == -1) {
+            printf("Все оценки свободных клеток неотрицательны. План оптимален.\n");
+            optimal = true;
+            free(u);
+            free(v);
+            break;
+        }
+
+        printf("Найдена клетка с отрицательной оценкой: A%d->B%d, delta = %.2f\n",
+            bestI + 1, bestJ + 1, minDelta);
+
+        // 3. Построение цикла пересчета
+        int* pathI = (int*)malloc((m + n) * sizeof(int));
+        int* pathJ = (int*)malloc((m + n) * sizeof(int));
+        int pathLen = 0;
+
+        if (findCycle(plan, m, n, bestI, bestJ, pathI, pathJ, &pathLen)) {
+            printf("Найден цикл перераспределения длиной %d\n", pathLen);
+
+            // 4. Определение минимального груза в цикле
+            double minQ = 1e9;
+            for (int k = 1; k < pathLen; k += 2) {
+                int i = pathI[k];
+                int j = pathJ[k];
+                if (plan[i][j] < minQ) {
+                    minQ = plan[i][j];
+                }
+            }
+
+            printf("Минимальный груз в цикле: %.0f\n", minQ);
+
+            // 5. Перераспределение груза по циклу
+            for (int k = 0; k < pathLen; k++) {
+                int i = pathI[k];
+                int j = pathJ[k];
+                if (k % 2 == 0) {
+                    plan[i][j] += minQ;
+                }
+                else {
+                    plan[i][j] -= minQ;
+                }
+            }
+
+            // 6. Удаление нулевых перевозок из базиса
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (plan[i][j] < EPS && plan[i][j] > -EPS) {
+                        plan[i][j] = 0;
+                    }
+                }
+            }
+
+            printf("План после перераспределения:\n");
+            printPlan(plan, costs, m, n);
+
+            double newCost = calculateCost(plan, costs, m, n);
+            printf("Новая стоимость: %.0f\n", newCost);
+        }
+        else {
+            printf("Не удалось найти цикл для перераспределения\n");
+            optimal = true;
+        }
+
+        free(pathI);
+        free(pathJ);
+        free(u);
+        free(v);
+    }
+
+    if (iteration >= 100) {
+        printf("Достигнуто максимальное число итераций\n");
+    }
+}
+
+int main() {
+    setlocale(LC_ALL, "RUS");
+    double supply[ROWS] = { 68, 82, 44, 27, 82 };
+    double demand[COLS] = { 14, 79, 54, 92, 64 };
+
+    // Матрица стоимостей 
+    double costs[ROWS][COLS] = {
+        {1, 7, 7, 3, 3},
+        {6, 3, 8, 8, 1},
+        {5, 3, 5, 5, 3},
+        {1, 7, 5, 3, 4},
+        {2, 5, 7, 3, 3}
+    };
+
+    printf("=== РЕШЕНИЕ ТРАНСПОРТНОЙ ЗАДАЧИ ===\n\n");
+
+    int m = ROWS;
+    int n = COLS;
+
+    // 1. Проверка баланса
+    double totalSupply = 0, totalDemand = 0;
+
+    printf("Матрица стоимостей:\n");
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++) {
-            printf("%6.0f", matrix[i][j]);
+            printf("%6.0f", costs[i][j]);
         }
         printf("\n");
     }
+
+    printf("\nЗапасы: ");
+    for (int i = 0; i < m; i++) {
+        printf("%.0f ", supply[i]);
+        totalSupply += supply[i];
+    }
+
+    printf("\nПотребности: ");
+    for (int j = 0; j < n; j++) {
+        printf("%.0f ", demand[j]);
+        totalDemand += demand[j];
+    }
+
+    printf("\nСумма запасов = %.0f\n", totalSupply);
+    printf("Сумма потребностей = %.0f\n", totalDemand);
+
+    if (fabs(totalSupply - totalDemand) > 0.001) {
+        printf("Баланс не выполнен. Добавляем фиктивного потребителя/поставщика.\n");
+        balanceProblem(supply, demand, costs, &m, &n);
+    }
+    else {
+        printf("Баланс выполнен.\n");
+    }
+
+    // 3. Построение опорных планов
+    printf("\n=== МЕТОД СЕВЕРО-ЗАПАДНОГО УГЛА ===\n");
+    double** planNW = northWestCorner(supply, demand, m, n);
+    printPlan(planNW, costs, m, n);
+    double costNW = calculateCost(planNW, costs, m, n);
+    printf("Стоимость: %.0f\n", costNW);
+
+    printf("\n=== МЕТОД МИНИМАЛЬНОГО ЭЛЕМЕНТА ===\n");
+    double** planMin = minimumCost(supply, demand, costs, m, n);
+    printPlan(planMin, costs, m, n);
+    double costMin = calculateCost(planMin, costs, m, n);
+    printf("Стоимость: %.0f\n", costMin);
+
+    // 4. Выбор лучшего плана
+    double** bestPlan;
+    double bestCost;
+    char* planName;
+
+    if (costNW < costMin) {
+        bestPlan = planNW;
+        bestCost = costNW;
+        planName = "Северо-западного угла";
+        for (int i = 0; i < m; i++) free(planMin[i]);
+        free(planMin);
+    }
+    else {
+        bestPlan = planMin;
+        bestCost = costMin;
+        planName = "Минимального элемента";
+        for (int i = 0; i < m; i++) free(planNW[i]);
+        free(planNW);
+    }
+
+    printf("\n=== ВЫБОР ЛУЧШЕГО ПЛАНА ===\n");
+    printf("Стоимость С-З угла: %.0f\n", costNW);
+    printf("Стоимость мин. элемента: %.0f\n", costMin);
+    printf("Разница стоимости: %.0f\n", fabs(costNW - costMin));
+    printf("Выбран план: %s\n", planName);
+
+    // 5-8. Оптимизация методом потенциалов
+    printf("\n=== ОПТИМИЗАЦИЯ МЕТОДОМ ПОТЕНЦИАЛОВ ===\n");
+    optimizePlan(bestPlan, supply, demand, costs, m, n);
+
+    printf("\n=== ОПТИМАЛЬНЫЙ ПЛАН ===\n");
+    printPlan(bestPlan, costs, m, n);
+    double finalCost = calculateCost(bestPlan, costs, m, n);
+    printf("Общая стоимость: %.0f\n", finalCost);
+
+    for (int i = 0; i < m; i++) free(bestPlan[i]);
+    free(bestPlan);
+
+    return 0;
 }
